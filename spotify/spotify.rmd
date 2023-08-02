@@ -1,0 +1,156 @@
+---
+title: "Spotify"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+About Dataset
+
+"Spotify Song Attributes Dataset: Exploring the Musical Landscape"
+The Spotify Song Attributes Dataset is a comprehensive collection of music tracks, encompassing various genres and artist names. This dataset provides valuable insights into the world of music, allowing enthusiasts, researchers, and data scientists to delve into the characteristics and nuances of each track.
+
+The dataset includes the author's streaming history throughout the year 2022. It consists of key features such as danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration, and time signature. These attributes provide a holistic view of the songs, enabling users to analyze and interpret different aspects of their musical composition.
+A warm upvote would be nice If you like this dataset😇
+
+link: https://www.kaggle.com/datasets/byomokeshsenapati/spotify-song-attributes
+
+
+QUESTIONS!!!
+
+Most listened artist?
+The 10 most listened artists?
+Most listened music?
+Longer song?
+The shortest song?
+The 10 most listened songs?
+Top 10 longest songs?
+Top 10 shortest songs?
+The average duration of songs by author?
+What is the most listened genre of music?
+What is the least listened genre of music?
+What is the longest music genre?
+What is the shortest music genre?
+Top 3 most listened genres?
+Top 3 least heard genres?
+Is there any artist without minutes heard?
+
+```{r Import}
+# Import
+# install.packages("dplyr")
+library(dplyr)
+```
+
+
+```{r Import data from csv}
+# Import data from CSV
+data <- read.csv("Spotify_Song_Attributes.csv")
+desiredColumns <- c("trackName", "artistName", "msPlayed", "genre", "duration_ms")
+data <- data[, desiredColumns]
+```
+
+```{r}
+# Dataset overview
+str(data)
+head(data)
+tail(data)
+```
+```{r}
+### DATA TREATMENT ###
+```
+
+
+```{r Replace empty fields with NA}
+# Replace empty fields with NA
+data <- data %>%
+  mutate_all(.funs = list(~ifelse(. %in% c("", " "), NA, .)))
+```
+
+
+```{r Count the number of rows with at least one NA value}
+# Count the number of rows with at least one NA value
+lines_with_na <- sum(apply(is.na(data), 1, any))
+```
+
+
+```{r Remove all NA fields}
+# Remove all NA fields
+data <- na.omit(data)
+```
+
+
+```{r Remove duplicated rows}
+# Escolha a coluna em que deseja contar as ocorrências dos nomes
+coluna_escolhida <- "trackName"  # Substitua "nomeda_coluna" pelo nome da coluna de interesse
+
+# Remover registros duplicados e manter apenas o primeiro de cada valor repetido
+data <- subset(data, !duplicated(data[[coluna_escolhida]]))
+
+```
+
+
+```{r Dataset Summary}
+# Dataset summary after data treatment
+summary(data)
+```
+
+```{r Most listened artist?}
+
+# MOST LISTENED ARTIST?
+
+# Agrupar os dados por artista e calcular a soma dos minutos ouvidos para cada artista
+artistas_mais_ouvidos <- data %>%
+  group_by(artistName) %>%
+  summarise(msPlayed = sum(msPlayed)) %>%
+  ungroup()  # Desfazer o agrupamento
+
+# Encontrar o índice do artista com a maior soma de minutos ouvidos
+indice_mais_ouvido <- which.max(artistas_mais_ouvidos$msPlayed)
+
+# Obter o nome do artista mais ouvido
+artista_mais_ouvido <- artistas_mais_ouvidos$artistName[indice_mais_ouvido]
+
+# Exibir o resultado
+print(artista_mais_ouvido)
+```
+```{r The 10 most listened artists?}
+
+# THE 10 MOST LISTENED ARTISTS
+
+# Ordenar em ordem decrescente com base na soma dos minutos ouvidos
+artistas_mais_ouvidos <- artistas_mais_ouvidos %>%
+  arrange(desc(msPlayed))
+
+# Adicionar o número do ranking
+artistas_mais_ouvidos <- artistas_mais_ouvidos %>%
+  mutate(ranking = row_number())
+
+# Selecionar os 10 artistas mais ouvidos e reorganizar as colunas
+top_10_artistas_mais_ouvidos <- head(artistas_mais_ouvidos, 10) %>%
+  select(ranking, artistName, msPlayed)
+
+# Exibir o resultado
+print(top_10_artistas_mais_ouvidos)
+```
+
+
+```{r}
+# Crie a tabela com os valores da coluna "genre" do seu conjunto de dados "dados"
+tabela_generos <- table(data$genre)
+
+# Ordene a tabela de forma decrescente (do maior para o menor)
+tabela_generos_ord <- sort(tabela_generos, decreasing = TRUE)
+
+# Selecione apenas os 10 primeiros valores da tabela
+top_10_generos <- tabela_generos_ord[1:10]
+
+# Obtenha os nomes dos gêneros para o ranking
+nomes_generos <- names(top_10_generos)
+
+# Crie o ranking usando a função rank
+ranking <- rank(-top_10_generos, ties.method = "min")
+
+# Imprima o resultado com o ranking
+for (i in 1:length(top_10_generos)) {
+  cat("Rank", ranking[i], ":", nomes_generos[i], "-", top_10_generos[i], "ocorrencias\n")
+}
+```
